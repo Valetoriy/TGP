@@ -1,6 +1,8 @@
 #define GLEW_STATIC
+#define STB_IMAGE_IMPLEMENTATION
 #include "ext/glew/glew.h"
 #include "ext/GLFW/glfw3.h"
+#include "ext/stbi/stb_image.h"
 
 #include <iostream>
 #include <string>
@@ -9,11 +11,9 @@ int main(void)
 {
     GLFWwindow* window;
 
-    /* Initialize the library */
     if (!glfwInit())
         return -1;
 
-    /* Create a windowed mode window and its OpenGL context */
     window = glfwCreateWindow(960, 720, 
     "The Global Pandemic", NULL, NULL);
     if (!window)
@@ -22,7 +22,6 @@ int main(void)
         return -1;
     }
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
     if (glewInit() != GLEW_OK)
         return -1;
@@ -39,6 +38,9 @@ int main(void)
     {
         0, 1, 2, 0, 2, 3
     };
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     unsigned int va;
     glGenVertexArrays(1, &va);
@@ -91,19 +93,37 @@ int main(void)
     glDeleteShader(vs);
     glDeleteShader(fs);
 
-    /* Loop until the user closes the window */
+    unsigned int tx;
+    stbi_set_flip_vertically_on_load(1);
+    int iwidth, iheight, ibpp;
+    unsigned char* ibuffer = stbi_load("img/covid.png", 
+    &iwidth, &iheight, &ibpp, 4);
+    if (!ibuffer)
+        std::cout << "Failed to load the texture!" << std::endl;
+    glGenTextures(1, &tx);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tx);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, iwidth, iheight, 
+    0, GL_RGBA, GL_UNSIGNED_BYTE, ibuffer);
+    if (ibuffer)
+        stbi_image_free(ibuffer);
+    
+    int location = glGetUniformLocation(sr, "u_Texture");
+    glUniform1i(location, 0);
+
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
         glClear(GL_COLOR_BUFFER_BIT);
-        glClearColor(0.5, 0.1, 0.4, 1.0);
+        //glClearColor(0.5, 0.1, 0.4, 1.0);
 
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        /* Swap front and back buffers */
         glfwSwapBuffers(window);
 
-        /* Poll for and process events */
         glfwPollEvents();
     }
 
