@@ -4,8 +4,8 @@ S = ../src/
 
 OBJS = main.o ShaderSource.o
 LIBS = -Llibs -lglfw3 -lglew32s -lgdi32 -luser32 -lkernel32 -lopengl32
-main: $(OBJS)
-	$(CC) -Wall -static $(OBJS) $(LIBS) -o ../main
+TGP: $(OBJS)
+	$(CC) -Wall -static $(OBJS) $(LIBS) -o ../TGP
 
 DEPS =
 main.o: $(S)main.cpp $(DEPS)
