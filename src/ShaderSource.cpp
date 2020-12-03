@@ -4,11 +4,12 @@ R"sh(
 
 in layout(location = 0) vec4 position;
 in layout(location = 1) vec2 texposition;
+uniform mat4 u_MVP;
 out vec2 o_texposition;
 
 void main()
 {
-    gl_Position = position;
+    gl_Position = u_MVP * position;
     o_texposition = texposition;
 }
 
